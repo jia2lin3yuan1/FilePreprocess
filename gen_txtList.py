@@ -1,4 +1,3 @@
-# python inference.py ~/DataSet/iPASCAL/VOCdevkit/VOC2012/JPEGImages/2011_000181.jpg ./logs/deeplab_resnet.ckpt
 import numpy as np
 import os
 import os.path
