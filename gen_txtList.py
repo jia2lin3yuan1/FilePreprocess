@@ -8,12 +8,13 @@ import pdb
 #----------------------------------------------------------
 '''
 Input: baseDir, is the common part of directories for all given directories.
-       dir_list, is the different part of directories for all given directories.
+       dir_list, is the different part of given directories in the start part.
+       postfix_list, is the different part of given directories at the end.
        train_len / val_len, how much file needed to do train / validation
 
 Output:  create list of file name for train / validation, including files existed in all given directories.
 '''
-def create_image_lists(baseDir, dir_list, train_len=10000, val_len=1000):
+def create_image_lists(baseDir, dir_list, postfix_list, train_len=10000, val_len=1000):
 
     image_dir = os.path.join(baseDir, dir_list[0])
     file_list = os.listdir(image_dir)
@@ -35,8 +36,8 @@ def create_image_lists(baseDir, dir_list, train_len=10000, val_len=1000):
                 filename = os.path.splitext(f.split("/")[-1])[0]
 
 	        exitFile = True # check if file existed?
-		for subDir in dir_list:
-                    img_dir = os.path.join(baseDir, subDir, filename + '.png')
+		for subDir, subPostfix in zip(dir_list, postfix_list):
+                    img_dir = os.path.join(baseDir, subDir, filename + subPostfix)
 		    if not os.path.exists(img_dir):
 			exitFile = False
 			break
@@ -67,7 +68,7 @@ def create_image_lists_by_fNameList(dir_list, postfix_list, list_path, outPath):
 
 	ele_list, fileExist = [], True
 	for subDir, subPostfix in zip(dir_list, postfix_list):
-	    saveDir = os.path.join(subDir, fileName, subPostfix)
+	    saveDir = os.path.join(subDir, fileName+subPostfix)
 
 	    if(os.path.exists(saveDir)):
 	        ele_list.append(saveDir)
@@ -88,6 +89,7 @@ if __name__ == '__main__':
     # generate filelist travel over the directory.
     DIR = './coco/PythonAPI'
     dir_list = ['Images', 'InstanceAnn', 'SemanticAnn']
+    postfix_list = ['.jpg', '.png', '.png']
     create_image_lists(DIR, dir_list, 20000, 2000)
 
     pdb.set_trace()
