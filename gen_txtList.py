@@ -46,7 +46,7 @@ def create_image_lists(baseDir, dir_list, train_len=10000, val_len=1000):
 		elif exitFile:
 		    val_list.append(filename)
 		else:
-		    printf('%s didn\'t exist in each folder.\n', filename)
+		    print('%s didn\'t exist in each folder.\n', filename)
 
             np.savetxt('train.txt', np.array(train_list), fmt = '%s')
 	    np.savetxt('val.txt', np.array(val_list), fmt = '%s')
@@ -56,10 +56,10 @@ def create_image_lists(baseDir, dir_list, train_len=10000, val_len=1000):
 Input: list_path,    points to a txt file which includes a file list.
        dir_list,     directories that expected to show on output file_list.
        postfix_list, postfix of files in corresponding different directories.
-       outPath,      points to the new output file_list file. 
+       outPath,      points to the new output file_list file.
 Output: a file named 'outPath', with content of file_list separated by space.
 '''
-def create_image_lists_by_fNameList(dir_list, postfix_list, listPath, outPath):
+def create_image_lists_by_fNameList(dir_list, postfix_list, list_path, outPath):
     save_list = []
     f = open(list_path, 'r')
     fileList = f.read().splitlines()
@@ -84,14 +84,16 @@ def create_image_lists_by_fNameList(dir_list, postfix_list, listPath, outPath):
 #-----------------------------------------------------------------------
 if __name__ == '__main__':
 
+    pdb.set_trace()
     # generate filelist travel over the directory.
     DIR = './coco/PythonAPI'
     dir_list = ['Images', 'InstanceAnn', 'SemanticAnn']
     create_image_lists(DIR, dir_list, 20000, 2000)
 
-    # generate complete filelist respect to different directories by filename list 
-	dir_list = ['./Image', './gt']
-	postfix_list = ['.jpg', '_sem.png']
+    pdb.set_trace()
+    # generate complete filelist respect to different directories by filename list
+    dir_list = ['./Image', './gt']
+    postfix_list = ['.jpg', '_sem.png']
     create_image_lists_by_fNameList(dir_list, postfix_list, './val.txt', 'val_smpl.txt')
 
 
