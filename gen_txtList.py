@@ -27,12 +27,11 @@ def create_image_lists(baseDir, dir_list, postfix_list, train_len=10000, val_len
 	    print('No enough files for train and validation')
 	else:
             poolNum = train_len + val_len
-	    pool = np.random.choice(fileNum, poolNum, replace=False)
 
 	    # generate file list
+            addFileNum = 0
             train_list, val_list = [], []
-            for k in range(poolNum):
-		f = file_list[pool[k]]
+            for f in file_list:
                 filename = os.path.splitext(f.split("/")[-1])[0]
 
 	        exitFile = True # check if file existed?
@@ -40,14 +39,17 @@ def create_image_lists(baseDir, dir_list, postfix_list, train_len=10000, val_len
                     img_dir = os.path.join(baseDir, subDir, filename + subPostfix)
 		    if not os.path.exists(img_dir):
 			exitFile = False
+		        print('Not Exist: ', img_dir, '\n')
 			break
 
-		if exitFile and k < train_len: # if existed, add to corresponding list
+		if exitFile and addFileNum < train_len: # if existed, add to corresponding list
                     train_list.append(filename)
+                    addFileNum = addFileNum + 1
 		elif exitFile:
 		    val_list.append(filename)
-		else:
-		    print('%s didn\'t exist in each folder.\n', filename)
+
+                if addFileNum == poolNum:
+                    break
 
             np.savetxt('train.txt', np.array(train_list), fmt = '%s')
 	    np.savetxt('val.txt', np.array(val_list), fmt = '%s')
@@ -85,17 +87,19 @@ def create_image_lists_by_fNameList(dir_list, postfix_list, list_path, outPath):
 #-----------------------------------------------------------------------
 if __name__ == '__main__':
 
+    '''
     pdb.set_trace()
     # generate filelist travel over the directory.
-    DIR = './coco/PythonAPI'
-    dir_list = ['Images', 'InstanceAnn', 'SemanticAnn']
-    postfix_list = ['.jpg', '.png', '.png']
-    create_image_lists(DIR, dir_list, 20000, 2000)
+    DIR = '/home/yuanjial'
+    dir_list = ['DataSet/PASCAL_aug/directions_g', 'NeuralNetwork/Tensorflow/deeplab_direction/code/output']
+    postfix_list = ['.png', '_dir.png']
+    create_image_lists(DIR, dir_list, postfix_list, 0, 1499)
+    '''
 
     pdb.set_trace()
     # generate complete filelist respect to different directories by filename list
-    dir_list = ['./Image', './gt']
-    postfix_list = ['.jpg', '_sem.png']
+    dir_list = ['/home/yuanjial/DataSet/PASCAL_aug/directions_g', '/home/yuanjial/NeuralNetwork/Tensorflow/deeplab_direction/code/output']
+    postfix_list = ['.png', '_dir.png']
     create_image_lists_by_fNameList(dir_list, postfix_list, './val.txt', 'val_smpl.txt')
 
 
