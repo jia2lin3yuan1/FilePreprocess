@@ -16,9 +16,9 @@ import pdb
 def createInstanceImage(annotations, img):
 
 	# an image we want to create
-	instanceImg  = Image.new("I", (img['height'], img['width']), 0)
-	semanticImg  = Image.new("I", (img['height'], img['width']), 0)
-	directionImg = Image.new("I", (img['height'], img['width']), 0)
+	instanceImg  = Image.new("I", (img['width'], img['height']), 0)
+	semanticImg  = Image.new("I", (img['width'], img['height']), 0)
+	directionImg = Image.new("I", (img['width'], img['height']), 0)
 
 	# a drawer to draw into the image
 	drawer_ins = ImageDraw.Draw(instanceImg)
@@ -38,7 +38,7 @@ def createInstanceImage(annotations, img):
 			for seg in ann['segmentation']:
 				poly = np.array(seg).reshape((len(seg)/2),2)
 				poly = poly.tolist()
-				poly = [tuple([elem[1],elem[0]]) for elem in poly]
+				poly = [tuple([elem[0],elem[1]]) for elem in poly]
 
 				# pdb.set_trace()
 				drawer_ins.polygon(poly, fill=instanceId, outline = None) # outline = None
@@ -52,10 +52,9 @@ def createInstanceImage(annotations, img):
 			m = mask.decode(rle)
 
 			idx = m.nonzero()
-			points = [tuple([elem[0], elem[1]]) for elem in zip(idx[0], idx[1])]
+			points = [tuple([elem[1], elem[0]]) for elem in zip(idx[0], idx[1])]
 			drawer_ins.point(points, fill=instanceId)
 			drawer_sem.point(points, fill=ann['category_id'])
-
 	return instanceImg, semanticImg
 		
 
@@ -102,7 +101,7 @@ def json2instanceImg(inJson, saveDir):
 
 	
 	# pdb.set_trace()
-	for k in range(32103, len(imgIds), 1):
+	for k in range(0, len(imgIds), 1): #32103
 		imgId = imgIds[k]
 		# for imgId in imgIds:
 		img = coco.loadImgs(imgId)[0]
@@ -115,11 +114,11 @@ def json2instanceImg(inJson, saveDir):
 
 		imgFileName = img['file_name'].split('.')
 		imgFileName = imgFileName[0].encode('utf8')
-		#misc.imsave((imgFileName+'_im.png'), I)
-		#semanticImg.save(imgFileName+'_sem.png')
-		#instanceImg.save(imgFileName+'_ins.png')
+		# misc.imsave((imgFileName+'_im.png'), I)
+		# semanticImg.save(imgFileName+'_sem.png')
+		# instanceImg.save(imgFileName+'_ins.png')
 
-		#pdb.set_trace()
+		# pdb.set_trace()
 
 		misc.imsave((saveDir[0]+imgFileName+'.png'), I)
 		semanticImg.save(saveDir[1]+imgFileName+'.png')
@@ -138,16 +137,6 @@ def json2instanceImg(inJson, saveDir):
 		'''
 		#pdb.set_trace()
 		instanceImg = createInstanceImage_old(anns, img)
-
-		imgFileName = img['file_name'].split('.')
-		imgFileName = imgFileName[0].encode('utf8')
-		misc.imsave((saveDir[1]+imgFileName+'.png'), instanceImg)
-
-		I = io.imread('http://mscoco.org/images/%d'%(img['id']))
-		misc.imsave((saveDir[0]+imgFileName+'.jpg'), I)
-		cnt = cnt + 1
-		if (cnt == 50):
-			break
 		'''
 
 
