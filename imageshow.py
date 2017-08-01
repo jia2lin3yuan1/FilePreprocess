@@ -1,7 +1,13 @@
 import numpy as np
+
 import matplotlib.pyplot as plt
+from matplotlib import image as mImg
+from matplotlib import cm
 
 def showImage():
+    '''
+    refering to: https://matplotlib.org/devdocs/gallery/pylab_examples/demo_tight_layout.html#sphx-glr-gallery-pylab-examples-demo-tight-layout-py
+    '''
     arr  = np.zeros([64, 64])
     arr[0:16, :] = 1
     arr[:, 0:16] = 2
