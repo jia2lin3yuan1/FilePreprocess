@@ -6,11 +6,11 @@ import numpy as np
 import cv2
 
 
-img_ht, img_wd = 32, 32
 num_white = 2
-def _arrange_data(inData):
+def _arrange_data(inData, visize):
+    img_ht, img_wd = visize
     num_data = inData.shape[2] # data has shape [ht, wd, ch]
-    cell_wd = min(7, int(np.sqrt(num_data)))
+    cell_wd = min(8, int(np.sqrt(num_data)))
     cell_ht = (num_data + cell_wd -1) // cell_wd
 
     out_wd = cell_wd*img_wd + cell_wd * num_white
@@ -30,7 +30,7 @@ def _arrange_data(inData):
 
     return outI
 
-def visual_layer(inData, layer_name):
+def visual_layer(inData, layer_name, out_dir='./output/', visize=[64, 64]):
 
     bsize = inData.shape[0] # inData has shape [batchSize, ht, wd, ch]
     for k in range(bsize):
@@ -39,8 +39,8 @@ def visual_layer(inData, layer_name):
         minV, maxV = np.min(tmpData), np.max(tmpData)
         tmpData = (tmpData - minV)* (255.0 / max(1, maxV-minV))
 
-        vI = _arrange_data(tmpData)
-        mpimg.imsave('./output/'+layer_name+'_color_'+str(k)+'.png', vI)
+        vI = _arrange_data(tmpData, visize)
+        mpimg.imsave(out_dir+str(k)+'_'+layer_name+'.png', vI)
         #img = misc.toimage(vI, high=np.max(vI), low=np.min(vI), mode='I')
         #img.save('./output/'+layer_name+'_gray_'+str(k)+'.png', vI)
 
