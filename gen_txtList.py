@@ -1,26 +1,21 @@
 import numpy as np
 import os
-import os.path
 
 import pdb
 
 #--------------------------------------------------
-def creat_video_image_lists(baseDir, dir_list, postfix_list, video_list_path, out_path):
+def creat_video_image_lists(baseDir, postfix, out_path):
     outList = []
-    with open(video_list_path) as f:
-        seq_list = f.read().splitlines()
+    seq_list = os.listdir(baseDir)
     for seq_name in seq_list:
-        image_dir = os.path.join(baseDir, dir_list[0], seq_name)
+        image_dir = os.path.join(baseDir, seq_name)
         file_list = os.listdir(image_dir)
-        file_list = sorted(file_list)
         for img_name in file_list:
-            file_name = img_name.split(postfix_list[0])[0]
-            ele_list = []
-            for k, sdir in enumerate(dir_list):
-                ele_list.append(os.path.join(sdir, seq_name, file_name+postfix_list[k]))
-            outList.append(ele_list)
+            file_name = img_name.split(postfix)[0]
+            outList.append(os.path.join(seq_name, file_name))
 
-    np.savetxt(out_path, np.asarray(outList), delimiter=" ", fmt = '%s')
+    #np.savetxt(out_path, np.asarray(outList), delimiter=" ", fmt = '%s')
+    np.savetxt(out_path, np.asarray(outList), delimiter="", fmt='%s')
 
 
 #----------------------------------------------------------
@@ -121,10 +116,8 @@ if __name__ == '__main__':
             # generate complete filelist respect to different directories by filename list
             create_image_lists_by_fNameList(DIR, dir_list, postfix_list, './pascal/train.txt', './pascal/sem_dir/train_pascal.txt')
     else: # parse video
-        baseDir      = '/media/zhouzh/LargeDisk/yjl_dataset/cityscape/'
-        dir_list     = ['leftImg8bit/val', 'semantic_ann/val', 'direction_8/val']
-        postfix_list = ['leftImg8bit.png', 'gtFine_labelIds.png', 'gtFine_.png']
-        video_list_path = os.path.join(baseDir,  'val.txt')
-        out_path  = os.path.join(baseDir, 'val.sem.file.txt')
-        creat_video_image_lists(baseDir, dir_list, postfix_list, video_list_path, out_path)
+        baseDir   = '/media/yuanjial/LargeDrive/DataSet/CityScapes/leftImg8bit/test/'
+        postfix   = '_leftImg8bit.png'
+        out_path  = os.path.join(baseDir, 'test.txt')
+        creat_video_image_lists(baseDir, postfix, out_path)
 
