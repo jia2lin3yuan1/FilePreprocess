@@ -1,12 +1,13 @@
 # matplotlib inline
 from pycocotools.coco import COCO
 import pycocotools._mask as mask
-import numpy as np
-import skimage.io as io
-
 import mahotas.polygon
-from scipy import misc
 
+import os
+import cv2
+import numpy as np
+from scipy import misc
+import skimage.io as io
 import PIL.Image     as Image
 import PIL.ImageDraw as ImageDraw
 import matplotlib.pyplot as plt
@@ -16,14 +17,14 @@ import pdb
 def createInstanceImage(annotations, img):
 
 	# an image we want to create
-	instanceImg  = Image.new("I", (img['width'], img['height']), 0)
-	semanticImg  = Image.new("I", (img['width'], img['height']), 0)
-	directionImg = Image.new("I", (img['width'], img['height']), 0)
+	instanceImg  = Image.new("I", (img.shape[1], img.shape[0]), 0)
+	semanticImg  = Image.new("I", (img.shape[1], img.shape[0]), 0)
+	#directionImg = Image.new("I", (img['width'], img['height']), 0)
 
 	# a drawer to draw into the image
 	drawer_ins = ImageDraw.Draw(instanceImg)
 	drawer_sem = ImageDraw.Draw(semanticImg)
-	drawer_dir = ImageDraw.Draw(directionImg)
+	#drawer_dir = ImageDraw.Draw(directionImg)
 
 	#loop over all objects
 	insId_list = []
@@ -43,10 +44,10 @@ def createInstanceImage(annotations, img):
 				# pdb.set_trace()
 				drawer_ins.polygon(poly, fill=instanceId, outline = None) # outline = None
 				drawer_sem.polygon(poly, fill=ann['category_id'], outline = None)
-		else: # (type(ann['segmentation'])== dict):
+		elif False: # (type(ann['segmentation'])== dict): ignore crowd object.
 			# mask
 			if type(ann['segmentation']['counts']) == list:
-				rle = mask.frPyObjects([ann['segmentation']], img['height'], img['width'])
+				rle = mask.frPyObjects([ann['segmentation']], img.shape[0], img.shape[1])
 			else:
 				rle = [ann['segmentation']]
 			m = mask.decode(rle)
@@ -55,15 +56,16 @@ def createInstanceImage(annotations, img):
 			points = [tuple([elem[1], elem[0]]) for elem in zip(idx[0], idx[1])]
 			drawer_ins.point(points, fill=instanceId)
 			drawer_sem.point(points, fill=ann['category_id'])
+
 	return instanceImg, semanticImg
-		
+
 
 
 def createInstanceImage_old(annotations, img):
 	# create and draw annotation mask.
 	semImg = np.zeros((img['height'], img['width']), dtype = np.uint8)
 	for ann in annotations:
-		pdb.set_trace()
+		# pdb.set_trace()
 		catgr_id = ann['category_id']
 		# c = ([catgr_id, catgr_id,catgr_id]).tolist()[0]
 		if type(ann['segmentation']) == list:
@@ -94,38 +96,31 @@ def createInstanceImage_old(annotations, img):
 
 	return annImg
 
-def json2instanceImg(inJson, saveDir):
+def json2instanceImg(inJson, rgbDir, dataSet,  saveDir):
 	coco = COCO(inJson)
 	imgIds = coco.getImgIds()
-	cnt = 0
 
-	
-	# pdb.set_trace()
-	for k in range(0, len(imgIds), 1): #32103
+
+	pdb.set_trace()
+	for k in range(len(imgIds)):
 		imgId = imgIds[k]
-		# for imgId in imgIds:
-		img = coco.loadImgs(imgId)[0]
-		annIds = coco.getAnnIds(imgIds=img['id'], iscrowd=None)
+		annIds = coco.getAnnIds(imgId, iscrowd=None)
 		anns = coco.loadAnns(annIds)
 
+                imgname = 'COCO_%s_'%(dataSet) + format(imgId, '012d')
+                img     = cv2.imread(os.path.join(rgbDir, imgname+'.jpg'))
 
-		I = io.imread('http://mscoco.org/images/%d'%(img['id']))
 		instanceImg, semanticImg = createInstanceImage(anns, img);
 
-		imgFileName = img['file_name'].split('.')
-		imgFileName = imgFileName[0].encode('utf8')
-		# misc.imsave((imgFileName+'_im.png'), I)
-		# semanticImg.save(imgFileName+'_sem.png')
-		# instanceImg.save(imgFileName+'_ins.png')
+                if False:
+			pdb.set_trace()
+			semanticImg.save(imgname+'_sem.png')
+			instanceImg.save(imgname+'_ins.png')
+		else:
+			semanticImg.save(os.path.join(saveDir[0], imgname+'.png'))
+			instanceImg.save(os.path.join(saveDir[1], imgname+'.png'))
+			print('processed image is {}'.format(imgname))
 
-		# pdb.set_trace()
-
-		misc.imsave((saveDir[0]+imgFileName+'.png'), I)
-		semanticImg.save(saveDir[1]+imgFileName+'.png')
-		instanceImg.save(saveDir[2]+imgFileName+'.png')
-
-		print('dealed index is {}'.format(k))
-		
 		'''
 		plt.figure(); plt.axis('off')
 		plt.imshow(I)
@@ -133,7 +128,7 @@ def json2instanceImg(inJson, saveDir):
 		coco.showAnns(anns)
 		plt.show()
 		'''
-		
+
 		'''
 		#pdb.set_trace()
 		instanceImg = createInstanceImage_old(anns, img)
@@ -141,13 +136,19 @@ def json2instanceImg(inJson, saveDir):
 
 
 def main():
-	dataDir  ='../Data'
-	dataType ='train2014'
-	annFile  ='%s/annotations/instances_%s.json'%(dataDir,dataType)
+	jsonDir  ='../Data/annotations_trainval2014/'
+	dataSet  ='train2014'
+	annFile  ='%s/instances_%s.json'%(jsonDir,dataSet)
 
-	outDir   = ['./Images/','./SemanticAnn/', './InstanceAnn/']
-	json2instanceImg(annFile, outDir)
-		
+        rgbDir   = '../Data/%s'%(dataSet)
+	outDir   = ['%s/instances_%s/semantic/'%(jsonDir, dataSet), '%s/instances_%s/instance/'%(jsonDir, dataSet)]
+        if(not os.path.exists(outDir[0])):
+            os.makedirs(outDir[0])
+        if(not os.path.exists(outDir[1])):
+            os.makedirs(outDir[1])
+
+	json2instanceImg(annFile, rgbDir, dataSet,  outDir)
+
 
 # call the main method
 if __name__ == "__main__":
